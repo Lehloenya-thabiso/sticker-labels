@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Router Sticker Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    canvas {
+      border: 2px solid #e5e7eb;
+      background-color: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 100%;
+      height: auto;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -webkit-crisp-edges;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 sm:p-8 flex items-center justify-center">
+
+  <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-10 w-full max-w-4xl mx-auto flex flex-col md:flex-row gap-8">
+    <div class="flex-1 space-y-6">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Router Sticker Generator</h1>
+      <p class="text-gray-600 leading-relaxed">
+        Enter the details below to generate and preview your custom router sticker. The sticker will update in real-time as you type.
+      </p>
+      
+      <div class="space-y-4">
+        <div>
+          <label for="ssid-suffix" class="block text-sm font-medium text-gray-700">4 Characters for SSID</label>
+          <input type="text" id="ssid-suffix" maxlength="4" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm uppercase" placeholder="e.g., QQQQ">
+        </div>
+        <div>
+          <label for="sn-input" class="block text-sm font-medium text-gray-700">S/N (IMEI)</label>
+          <input type="text" id="sn-input" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 1234567890">
+        </div>
+      </div>
+
+      <button id="print-button" class="w-full sm:w-auto px-6 py-3 bg-pink-600 text-white font-semibold rounded-lg shadow-md hover:bg-deepkink-700 transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
+        Print Sticker
+      </button>
+    </div>
+
+    <div class="flex-1 flex flex-col items-center justify-center">
+      <h2 class="text-xl font-semibold mb-4 text-gray-800">Preview</h2>
+      <canvas id="sticker-canvas" width="600" height="300" class="w-full h-auto"></canvas>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const ssidInput = document.getElementById('ssid-suffix');
+      const snInput = document.getElementById('sn-input');
+      const canvas = document.getElementById('sticker-canvas');
+      const printButton = document.getElementById('print-button');
+      const ctx = canvas.getContext('2d');
+
+      const regularFont = "20px 'Inter', sans-serif";
+      const boldFont = "bold 20px 'Inter', sans-serif";
+
+      // --- Draw barcode using JsBarcode ---
+      function drawBarcode(ctx, text, x, y, width, height) {
+        const tempCanvas = document.createElement('canvas');
+        JsBarcode(tempCanvas, text, {
+          format: "CODE128",
+          displayValue: true,
+          fontSize: 15,
+          margin: 0,
+          lineColor: "#000000",
+          width: 2,
+          height: 20
+        });
+        ctx.drawImage(tempCanvas, x, y, width, height);
+      }
+
+      function drawRouterLabel(ssidSuffix, imeiInput) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (!imeiInput) return;
+
+        const ssid_24g = `ONE-G5010-2.4G-${ssidSuffix}`;
+        const ssid_5g = `ONE-G5010-5G-${ssidSuffix}`;
+        const wifi_password = imeiInput.slice(-8);
+        const serial_number = `G5010${imeiInput}`;
+
+        const margin_x =30;
+        const margin_y = 50;
+        const line_spacing = 20;
+        let y_offset = margin_y;
+
+        // Draw "Model: G5010"
+        ctx.font = regularFont;
+        ctx.fillStyle = 'black';
+        const modelText = "Model: ";
+        const modelG5010Text = "G5010";
+        ctx.fillText(modelText, margin_x, y_offset);
+
+        const modelTextWidth = ctx.measureText(modelText).width;
+        ctx.font = boldFont;
+        ctx.fillText(modelG5010Text, margin_x + modelTextWidth, y_offset);
+
+        y_offset += line_spacing;
+
+        const textLines = [
+          `Wi-Fi SSID(2.4G): ${ssid_24g}`,
+          `Wi-Fi SSID(5G): ${ssid_5g}`,
+          `Wi-Fi Password: ${wifi_password}`,
+          "IP Address: 192.168.8.1",
+          "Username/Password: admin/admin",
+          "Input Voltage: DC 12V-2A",
+          `IMEI: ${imeiInput}`
+        ];
+
+        ctx.font = regularFont;
+        for (const line of textLines) {
+          ctx.fillText(line, margin_x, y_offset);
+          y_offset += line_spacing;
+        }
+
+        // Draw "S/N: " and the serial number
+        ctx.font = regularFont;
+        const snLabel = "S/N: ";
+        const snLabelWidth = ctx.measureText(snLabel).width;
+        ctx.fillText(snLabel, margin_x, y_offset);
+
+        ctx.font = boldFont;
+        ctx.fillText(serial_number, margin_x + snLabelWidth, y_offset);
+
+        // Move to the next line for the barcode
+        y_offset += line_spacing;
+
+        // Calculate the centered x-coordinate
+        const barcodeWidth = 400;
+        const barcodeHeight = 50;
+        const barcodeX = (canvas.width / 2) - (barcodeWidth / 2);
+
+        // Draw barcode
+        drawBarcode(ctx, imeiInput, barcodeX, y_offset + 10, barcodeWidth, barcodeHeight);
+      }
+
+      function updatePreview() {
+        const ssidSuffix = ssidInput.value.trim().toUpperCase();
+        const snInputVal = snInput.value.trim();
+        drawRouterLabel(ssidSuffix, snInputVal);
+      }
+
+      ssidInput.addEventListener('input', updatePreview);
+      snInput.addEventListener('input', updatePreview);
+
+      printButton.addEventListener('click', () => {
+        const imageData = canvas.toDataURL('image/png');
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>Print Sticker</title>');
+        printWindow.document.write('<style>@page { size: auto; margin: 0; }</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(`<img src="${imageData}" style="max-width: 100%; height: auto; display: block; margin: auto;">`);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.onload = () => {
+          printWindow.print();
+          printWindow.close();
+        };
+      });
+
+      // Initial draw
+      updatePreview();
+    });
+  </script>
+
+</body>
+</html>
