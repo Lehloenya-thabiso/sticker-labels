@@ -25,8 +25,13 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-4 sm:p-8 flex items-center justify-center">
+<body class="bg-gray-100 min-h-screen p-4 sm:p-8 flex flex-col items-center">
+  <!-- Centered Logo at Top -->
+  <div class="w-full flex justify-center mb-6">
+    <img src="Umoja_Logo_Web_320x86.png" alt="Logo" class="h-20 object-contain">
+  </div>
 
+  <!-- Main Card -->
   <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-10 w-full max-w-4xl mx-auto flex flex-col md:flex-row gap-8">
     <div class="flex-1 space-y-6">
       <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Router Sticker Generator</h1>
@@ -45,7 +50,7 @@
         </div>
       </div>
 
-      <button id="print-button" class="w-full sm:w-auto px-6 py-3 bg-pink-600 text-white font-semibold rounded-lg shadow-md hover:bg-deepkink-700 transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
+      <button id="print-button" class="w-full sm:w-auto px-6 py-3 bg-pink-600 text-white font-semibold rounded-lg shadow-md hover:bg-pink-700 transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
         Print Sticker
       </button>
     </div>
@@ -92,7 +97,7 @@
         const wifi_password = imeiInput.slice(-8);
         const serial_number = `G5010${imeiInput}`;
 
-        const margin_x =30;
+        const margin_x = 30;
         const margin_y = 50;
         const line_spacing = 20;
         let y_offset = margin_y;
@@ -175,6 +180,5 @@
       updatePreview();
     });
   </script>
-
 </body>
 </html>
